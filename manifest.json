@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "YT Playlist → NotebookLM",
+  "version": "1.0.0",
+  "description": "YouTubeプレイリストの全動画URLをコピーしてNotebookLMにすぐ貼り付け！",
+  "permissions": [
+    "activeTab",
+    "clipboardWrite",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://www.youtube.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "YT Playlist → NotebookLM"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/playlist*"],
+      "js": ["content.js"]
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

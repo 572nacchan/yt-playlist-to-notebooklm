@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YT Playlist → NotebookLM</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+    :root {
+      --bg: #0f0f11;
+      --surface: #1a1a1f;
+      --border: #2a2a35;
+      --accent: #ff4e4e;
+      --accent2: #ffb347;
+      --text: #f0f0f5;
+      --text-muted: #7a7a8a;
+      --success: #4ecca3;
+      --radius: 10px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 320px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Instrument Sans', sans-serif;
+      padding: 16px;
+      min-height: 160px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .logo {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .title-block h1 {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      line-height: 1;
+    }
+
+    .title-block p {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .status-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .status-text {
+      font-size: 12px;
+      line-height: 1.4;
+      color: var(--text-muted);
+    }
+
+    .status-text strong {
+      color: var(--text);
+      display: block;
+      font-size: 13px;
+    }
+
+    .url-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--success);
+      margin-right: 2px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 10px 14px;
+      border: none;
+      border-radius: var(--radius);
+      font-family: 'Instrument Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      letter-spacing: 0.02em;
+      margin-bottom: 6px;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #ff3333;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary:disabled {
+      background: var(--border);
+      color: var(--text-muted);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      font-size: 11px;
+    }
+
+    .btn-secondary:hover {
+      color: var(--text);
+      border-color: var(--text-muted);
+    }
+
+    .url-preview {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px 10px;
+      margin-bottom: 10px;
+      max-height: 100px;
+      overflow-y: auto;
+      display: none;
+    }
+
+    .url-preview.visible {
+      display: block;
+    }
+
+    .url-preview::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .url-preview::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+
+    .url-preview::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 2px;
+    }
+
+    .url-item {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9.5px;
+      color: var(--text-muted);
+      padding: 2px 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .url-item:not(:last-child) {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 3px;
+      margin-bottom: 3px;
+    }
+
+    .success-flash {
+      animation: flash 0.4s ease;
+    }
+
+    @keyframes flash {
+      0% { background: var(--surface); }
+      50% { background: rgba(78, 204, 163, 0.15); border-color: var(--success); }
+      100% { background: var(--surface); }
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .error-text {
+      color: var(--accent);
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .footer a {
+      color: var(--accent2);
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="logo">▶</div>
+    <div class="title-block">
+      <h1>YT Playlist → NotebookLM</h1>
+      <p>プレイリストURLを一括コピー</p>
+    </div>
+  </div>
+
+  <div class="status-bar" id="statusBar">
+    <span class="status-icon" id="statusIcon">🎬</span>
+    <div class="status-text" id="statusText">
+      YouTubeのプレイリストページを開いて<br>ボタンを押してね
+    </div>
+  </div>
+
+  <div class="url-preview" id="urlPreview"></div>
+
+  <button class="btn btn-primary" id="copyBtn">
+    📋 URLをコピーする
+  </button>
+
+  <button class="btn btn-secondary" id="openNotebookBtn">
+    🔗 NotebookLMを開く
+  </button>
+
+  <div class="footer">
+    <a href="https://notebooklm.google.com" id="nbLink" target="_blank">notebooklm.google.com</a>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
